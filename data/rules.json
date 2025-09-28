@@ -1,0 +1,233 @@
+{
+  "metadata": {
+    "version": "2025-09-28",
+    "country": "CR",
+    "source_notice": "Plantilla de reglas. Verifica y actualiza enlaces/montos/oficinas según fuentes oficiales (MEIC, Registro Nacional, Hacienda ATV, CCSS, INS, Municipalidades, Ministerio de Salud)."
+  },
+  "entities": {
+    "registro_nacional": {
+      "nombre": "Registro Nacional – Personas Jurídicas",
+      "enlace": "https://www.registronacional.go.cr/",
+      "mapa": {
+        "tipo": "fisico",
+        "lat": 9.9369,
+        "lng": -84.0857
+      },
+      "notas": "Constitución e inscripción de sociedades (a través de notaría)."
+    },
+    "hacienda_atv": {
+      "nombre": "Ministerio de Hacienda – ATV",
+      "enlace": "https://www.hacienda.go.cr/ATV/",
+      "mapa": {
+        "tipo": "online",
+        "lat": null,
+        "lng": null
+      },
+      "notas": "Inscripción en el RUT y activación de facturación electrónica."
+    },
+    "ccss": {
+      "nombre": "CCSS – Aseguramiento",
+      "enlace": "https://www.ccss.sa.cr/",
+      "mapa": {
+        "tipo": "fisico",
+        "lat": 9.9326,
+        "lng": -84.0773
+      },
+      "notas": "Inscripción como patrono o como trabajador independiente."
+    },
+    "ins_rt": {
+      "nombre": "INS – Póliza de Riesgos del Trabajo",
+      "enlace": "https://www.ins-cr.com/",
+      "mapa": {
+        "tipo": "fisico",
+        "lat": 9.9352,
+        "lng": -84.0783
+      },
+      "notas": "Obligatoria si hay personal."
+    },
+    "municipalidad": {
+      "nombre": "Municipalidad (patente y uso de suelo)",
+      "enlace": "https://www.ifam.go.cr/municipalidades/",
+      "mapa": {
+        "tipo": "fisico",
+        "lat": 9.932,
+        "lng": -84.08
+      },
+      "notas": "Permiso de uso de suelo y patente comercial (según cantón)."
+    },
+    "ministerio_salud": {
+      "nombre": "Ministerio de Salud – Permiso Sanitario de Funcionamiento",
+      "enlace": "https://www.ministeriodesalud.go.cr/",
+      "mapa": {
+        "tipo": "fisico",
+        "lat": 9.9329,
+        "lng": -84.0786
+      },
+      "notas": "PSF obligatorio para giros regulados (alimentos, salud, etc.)."
+    },
+    "meic_pyme": {
+      "nombre": "MEIC – Registro PYME (opcional)",
+      "enlace": "https://www.meic.go.cr/",
+      "mapa": {
+        "tipo": "online",
+        "lat": null,
+        "lng": null
+      },
+      "notas": "Puede otorgar beneficios para MIPYMES."
+    }
+  },
+  "steps": {
+    "constitucion_sociedad": {
+      "entidad_ref": "registro_nacional",
+      "proceso": "Constituir e inscribir la sociedad (S.A. o S.R.L.) mediante notaría y posterior inscripción en el Registro Nacional.",
+      "prerequisitos": [
+        "Minuta notarial",
+        "Pago de timbres y aranceles",
+        "Cédulas de socios y representante"
+      ],
+      "documentos": [
+        "Escritura de constitución",
+        "Personería jurídica"
+      ],
+      "include_if": {
+        "tipo_sociedad_in": [
+          "sociedad_anonima",
+          "sociedad_responsabilidad_limitada"
+        ]
+      }
+    },
+    "inscripcion_hacienda": {
+      "entidad_ref": "hacienda_atv",
+      "proceso": "Inscripción en el Registro Único Tributario (RUT) y configuración de facturación electrónica.",
+      "prerequisitos": [
+        "Cédula (PF) o personería (PJ)",
+        "Dirección fiscal",
+        "Actividad económica (CIIU)"
+      ],
+      "documentos": [
+        "Formulario D-140 (en ATV)",
+        "Comprobantes de domicilio"
+      ],
+      "include_if": {
+        "always": true
+      }
+    },
+    "seguro_ccss": {
+      "entidad_ref": "ccss",
+      "proceso": "Inscripción ante CCSS como patrono (si hay personal) o como trabajador independiente.",
+      "prerequisitos": [
+        "Documento de identidad/personería",
+        "Planilla estimada de salarios (si aplica)"
+      ],
+      "documentos": [
+        "Formulario de inscripción patronal o independiente"
+      ],
+      "include_if": {
+        "or": [
+          {
+            "tendra_personal": true
+          },
+          {
+            "tipo_sociedad_in": [
+              "persona_fisica"
+            ]
+          }
+        ]
+      }
+    },
+    "poliza_rt": {
+      "entidad_ref": "ins_rt",
+      "proceso": "Contratación de póliza de Riesgos del Trabajo (si hay personal).",
+      "prerequisitos": [
+        "Cantidad de trabajadores",
+        "Planilla salarial"
+      ],
+      "documentos": [
+        "Solicitud de póliza RT"
+      ],
+      "include_if": {
+        "tendra_personal": true
+      }
+    },
+    "municipal": {
+      "entidad_ref": "municipalidad",
+      "proceso": "Trámite de uso de suelo y patente comercial ante la municipalidad del cantón.",
+      "prerequisitos": [
+        "Dirección exacta",
+        "Croquis o plano (si lo solicitan)"
+      ],
+      "documentos": [
+        "Solicitud de patente",
+        "Constancia de uso de suelo"
+      ],
+      "include_if": {
+        "always": true
+      }
+    },
+    "psf_salud": {
+      "entidad_ref": "ministerio_salud",
+      "proceso": "Permiso Sanitario de Funcionamiento (PSF) si la actividad está regulada (alimentos, salud, belleza, etc.).",
+      "prerequisitos": [
+        "Planos/visita técnica (según giro)",
+        "Certificados específicos (si aplica)"
+      ],
+      "documentos": [
+        "Formulario PSF",
+        "Comprobantes de pago"
+      ],
+      "include_if": {
+        "actividad_requiere_psf": true
+      }
+    },
+    "registro_pyme": {
+      "entidad_ref": "meic_pyme",
+      "proceso": "Registro PYME del MEIC (opcional) para acceder a beneficios.",
+      "prerequisitos": [
+        "Estar al día con Hacienda y CCSS"
+      ],
+      "documentos": [
+        "Solicitud en línea"
+      ],
+      "include_if": {
+        "opcional": true
+      }
+    }
+  },
+  "flows": {
+    "persona_fisica": [
+      "inscripcion_hacienda",
+      "seguro_ccss",
+      "municipal",
+      "psf_salud",
+      "registro_pyme"
+    ],
+    "sociedad_anonima": [
+      "constitucion_sociedad",
+      "inscripcion_hacienda",
+      "seguro_ccss",
+      "poliza_rt",
+      "municipal",
+      "psf_salud",
+      "registro_pyme"
+    ],
+    "sociedad_responsabilidad_limitada": [
+      "constitucion_sociedad",
+      "inscripcion_hacienda",
+      "seguro_ccss",
+      "poliza_rt",
+      "municipal",
+      "psf_salud",
+      "registro_pyme"
+    ]
+  },
+  "defaults": {
+    "actividad_requiere_psf": [
+      "alimentos",
+      "restaurante",
+      "salud",
+      "cosmetologia",
+      "educacion_precolegial"
+    ],
+    "regimen_tributario_por_defecto": "tradicional"
+  }
+}

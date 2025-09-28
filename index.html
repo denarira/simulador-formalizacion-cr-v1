@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Simulador de Formalización | Costa Rica</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <!-- Leaflet (mapa) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" integrity="" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="" crossorigin=""></script>
+  <!-- html2pdf (PDF) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Simulador de formalización de empresa · Costa Rica</h1>
+      <span class="badge">Versión 1 (estático)</span>
+    </div>
+
+    <div class="card">
+      <div class="grid">
+        <div class="col-6">
+          <label for="tipo_sociedad">Tipo de figura</label>
+          <select id="tipo_sociedad">
+            <option value="persona_fisica">Persona física con actividad lucrativa</option>
+            <option value="sociedad_anonima">Sociedad Anónima (S.A.)</option>
+            <option value="sociedad_responsabilidad_limitada">Sociedad de Responsabilidad Limitada (S.R.L.)</option>
+          </select>
+        </div>
+        <div class="col-6">
+          <label for="ciiu">Actividad (CIIU o descripción)</label>
+          <input id="ciiu" placeholder="Ej.: restaurante, consultoría, comercio minorista" />
+        </div>
+        <div class="col-6">
+          <label for="canton">Cantón</label>
+          <input id="canton" placeholder="Ej.: Cartago, Montes de Oca, San Carlos" />
+        </div>
+        <div class="col-6">
+          <label for="regimen">Preferencia de régimen tributario</label>
+          <select id="regimen">
+            <option value="auto">Que el sistema sugiera</option>
+            <option value="tradicional">Tradicional</option>
+            <option value="simplificado">Simplificado</option>
+          </select>
+        </div>
+        <div class="col-12">
+          <label><input type="checkbox" id="tendra_personal" /> ¿Tendrá personal contratado?</label>
+        </div>
+        <div class="col-12">
+          <button id="btnSimular">Generar itinerario y ficha técnica</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="col-6">
+        <div class="card">
+          <h2>Itinerario de trámites</h2>
+          <div id="itinerario"></div>
+        </div>
+        <div class="card">
+          <h2>Ficha técnica</h2>
+          <div id="ficha"></div>
+          <div style="margin-top:10px">
+            <button id="btnPdf">Descargar PDF</button>
+          </div>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="card">
+          <h2>Mapa de entidades</h2>
+          <div id="map"></div>
+          <p class="small" style="margin-top:8px">Las ubicaciones físicas son referenciales. Verifique sedes y oficinas activas según su cantón.</p>
+        </div>
+        <div class="card">
+          <h2>Salida técnica (JSON)</h2>
+          <pre class="json" id="jsonOut">{}</pre>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      Hecho con HTML/JS + Leaflet + html2pdf. Reglas en <code>/data/rules.json</code>.
+    </footer>
+  </div>
+
+  <script src="js/engine.js"></script>
+  <script src="js/pdf.js"></script>
+</body>
+</html>
