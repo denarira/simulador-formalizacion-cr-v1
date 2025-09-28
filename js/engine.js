@@ -193,7 +193,8 @@ function renderJSON(obj) {
 async function main() {
   await loadRules();
   initMap();
-
+  document.getElementById('btnPdf').disabled = true; // desactiva al iniciar
+  
   document.getElementById('btnSimular').addEventListener('click', () => {
     const ctx = {
       tipo_sociedad: document.getElementById('tipo_sociedad').value,
@@ -207,6 +208,7 @@ async function main() {
     renderItinerary(itinerario);
     const ficha = buildFicha(ctx, itinerario);
     renderFicha(ficha);
+    document.getElementById('btnPdf').disabled = false;
     renderJSON({ itinerario, ficha_tecnica: ficha });
   });
 
