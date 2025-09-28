@@ -62,3 +62,4 @@ footer { text-align:center; color: var(--muted); font-size: .9rem; padding: 16px
 pre.json {
   background: #0b1020; color: #e5e7eb; padding: 12px; border-radius: 12px; overflow:auto;
 }
+#pdfArea { background:#fff; color:#1f2937; }
