@@ -1,6 +1,7 @@
 
 /* engine.js - Lógica mínima para Versión 1 (estático) */
 let RULES = null;
+window.APP_STATE = { itinerario: [], ficha: null };
 let MAP = null;
 let markers = [];
 
@@ -165,7 +166,7 @@ function renderItinerary(it) {
 }
 
 function renderFicha(ficha) {
-  const cont = document.getElementById('ficha');
+ const cont = document.getElementById('ficha');
   cont.innerHTML = `
     <div id="pdfArea">
       <h3>Ficha técnica de formalización</h3>
@@ -208,6 +209,7 @@ async function main() {
     renderItinerary(itinerario);
     const ficha = buildFicha(ctx, itinerario);
     renderFicha(ficha);
+    window.APP_STATE = { itinerario, ficha };
     document.getElementById('btnPdf').disabled = false;
     renderJSON({ itinerario, ficha_tecnica: ficha });
   });
