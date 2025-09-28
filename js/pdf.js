@@ -1,74 +1,95 @@
-/* pdf.js - Generador programático con jsPDF (sin html2canvas) */
+/* pdf.js – PDF con enlaces clicables usando jsPDF */
 function downloadPDF() {
-  if (!window.jspdf) {
-    alert('No se cargó jsPDF. Verifica la línea del script en index.html.');
-    return;
-  }
+  if (!window.jspdf) { alert('jsPDF no está cargado'); return; }
   const state = window.APP_STATE || {};
   const ficha = state.ficha;
   const it = state.itinerario || [];
-  if (!ficha) {
-    alert('Primero presiona "Generar" para crear la ficha.');
-    return;
-  }
+  if (!ficha) { alert('Primero presiona "Generar".'); return; }
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
 
-  const left = 12;
-  const maxW = 186;      // ancho útil (210 - márgenes)
+  const left = 12, maxW = 186;
   let y = 16;
 
-  const H = (t, size = 14) => { doc.setFontSize(size); doc.setFont('Helvetica','bold'); };
-  const N = (t, size = 11) => { doc.setFontSize(size); doc.setFont('Helvetica','normal'); };
+  const setN = (s=11)=>{ doc.setFont('Helvetica','normal'); doc.setFontSize(s); doc.setTextColor(0,0,0); };
+  const setH = (s=14)=>{ doc.setFont('Helvetica','bold'); doc.setFontSize(s); doc.setTextColor(0,0,0); };
+  const ensurePage = ()=>{ if (y>280){ doc.addPage(); y=16; } };
 
-  const wrap = (txt, w = maxW, lh = 6) => {
-    const lines = doc.splitTextToSize(txt, w);
+  // Helpers
+  const wrapText = (txt)=> {
+    const lines = doc.splitTextToSize(txt, maxW);
     doc.text(lines, left, y);
-    y += lines.length * lh;
+    y += lines.length * 6;
   };
-  const line = () => { doc.setDrawColor(200); doc.line(left, y, left + maxW, y); y += 4; };
-  const ensurePage = () => { if (y > 280) { doc.addPage(); y = 16; } };
+  const linkLine = (label, url) => {
+    // imprime "Label: " normal y a continuación el link en azul y clicable
+    setN();
+    const labelTxt = label + ': ';
+    const w = doc.getTextWidth(labelTxt);
+    doc.text(labelTxt, left, y);
+    // decidir si cabe en la misma línea
+    let x = left + w;
+    if (x + doc.getTextWidth(url) > left + maxW) {
+      y += 6; x = left; // salir a la siguiente línea si no cabe
+    }
+    doc.setTextColor(6,69,173); // azul estilo link
+    doc.textWithLink(url, x, y, { url });
+    doc.setTextColor(0,0,0);
+    y += 6;
+  };
 
-  // --- Título
-  H(); doc.text('Ficha técnica de formalización – Costa Rica', left, y); y += 8; line();
+  // Título
+  setH(); doc.text('Ficha técnica de formalización – Costa Rica', left, y); y += 8;
+  doc.setDrawColor(200); doc.line(left, y, left+maxW, y); y += 4;
 
-  // --- Datos básicos
-  H(); doc.text('Resumen del caso', left, y); y += 7; N();
-  wrap(`Tipo de figura: ${ficha.tipo_sociedad}`);
-  wrap(`Actividad: ${ficha.actividad_ciiu || '—'}`);
-  wrap(`Cantón: ${ficha.canton || '—'}`);
-  wrap(`¿Tendrá personal?: ${ficha.tendra_personal ? 'Sí' : 'No'}`);
-  y += 2; line(); ensurePage();
+  // Resumen
+  setH(); doc.text('Resumen del caso', left, y); y += 7; setN();
+  wrapText(`Tipo de figura: ${ficha.tipo_sociedad}`);
+  wrapText(`Actividad: ${ficha.actividad_ciiu || '—'}`);
+  wrapText(`Cantón: ${ficha.canton || '—'}`);
+  wrapText(`¿Tendrá personal?: ${ficha.tendra_personal ? 'Sí' : 'No'}`);
+  y += 2; ensurePage();
 
-  // --- Parámetros clave
-  H(); doc.text('Parámetros y entidades clave', left, y); y += 7; N();
-  wrap(`Registro Nacional: ${ficha.registro_nacional.requerido ? 'Requerido' : 'No aplica'} – ${ficha.registro_nacional.enlace}`);
-  wrap(`Hacienda (ATV): régimen ${ficha.hacienda_atv.regimen} – ${ficha.hacienda_atv.enlace}`);
-  wrap(`CCSS: ${ficha.ccss.tipo} – ${ficha.ccss.enlace}`);
-  wrap(`INS (RT): ${ficha.ins_rt.aplica ? 'Aplica' : 'No aplica'} – ${ficha.ins_rt.enlace}`);
-  wrap(`Municipalidad: uso de suelo/patente – ${ficha.municipalidad.enlace}`);
-  wrap(`Ministerio de Salud: PSF ${ficha.salud.psf ? 'obligatorio' : 'no requerido'} – ${ficha.salud.enlace}`);
-  wrap(`MEIC (PYME): Opcional – ${ficha.meic_pyme.enlace}`);
-  y += 2; line(); ensurePage();
+  // Parámetros y enlaces clave (clicables)
+  setH(); doc.text('Parámetros y entidades clave', left, y); y += 7; setN();
+  wrapText(`Registro Nacional: ${ficha.registro_nacional.requerido ? 'Requerido' : 'No aplica'}`);
+  if (ficha.registro_nacional.enlace) linkLine('Sitio', ficha.registro_nacional.enlace);
 
-  // --- Itinerario
-  H(); doc.text('Itinerario de trámites', left, y); y += 7; N();
+  wrapText(`Hacienda (ATV): régimen ${ficha.hacienda_atv.regimen}`);
+  if (ficha.hacienda_atv.enlace) linkLine('ATV', ficha.hacienda_atv.enlace);
 
+  wrapText(`CCSS: ${ficha.ccss.tipo}`);
+  if (ficha.ccss.enlace) linkLine('CCSS', ficha.ccss.enlace);
+
+  wrapText(`INS (RT): ${ficha.ins_rt.aplica ? 'Aplica' : 'No aplica'}`);
+  if (ficha.ins_rt.enlace) linkLine('INS', ficha.ins_rt.enlace);
+
+  wrapText('Municipalidad: uso de suelo y patente');
+  if (ficha.municipalidad.enlace) linkLine('Directorio municipal', ficha.municipalidad.enlace);
+
+  wrapText(`Ministerio de Salud: PSF ${ficha.salud.psf ? 'obligatorio' : 'no requerido'}`);
+  if (ficha.salud.enlace) linkLine('Salud', ficha.salud.enlace);
+
+  if (ficha.meic_pyme?.enlace) linkLine('MEIC PYME', ficha.meic_pyme.enlace);
+  y += 2; ensurePage();
+
+  // Itinerario
+  setH(); doc.text('Itinerario de trámites', left, y); y += 7; setN();
   it.forEach(step => {
     ensurePage();
-    H(); doc.text(`${step.orden}. ${step.entidad}`, left, y); y += 6; N();
-    wrap(`Proceso: ${step.proceso}`);
-    if (step.prerequisitos?.length) wrap(`Prerequisitos: ${step.prerequisitos.join(', ')}`);
-    if (step.documentos?.length)    wrap(`Documentos: ${step.documentos.join(', ')}`);
-    if (step.enlace)                 wrap(`Enlace: ${step.enlace}`);
-    y += 3;
+    setH(12); doc.text(`${step.orden}. ${step.entidad}`, left, y); y += 6; setN();
+    wrapText(`Proceso: ${step.proceso}`);
+    if (step.prerequisitos?.length) wrapText(`Prerequisitos: ${step.prerequisitos.join(', ')}`);
+    if (step.documentos?.length)    wrapText(`Documentos: ${step.documentos.join(', ')}`);
+    if (step.enlace)                 linkLine('Enlace', step.enlace);
+    y += 2;
   });
 
-  // --- Pie
-  ensurePage(); line();
-  N(10); y += 4;
-  wrap('Nota: Esta ficha es informativa y debe contrastarse con fuentes oficiales (MEIC, Registro Nacional, Hacienda, CCSS, INS, Municipalidades y Ministerio de Salud).');
+  // Nota
+  ensurePage();
+  doc.setDrawColor(200); doc.line(left, y, left+maxW, y); y += 4;
+  wrapText('Nota: Esta ficha es informativa y debe contrastarse con fuentes oficiales (MEIC, Registro Nacional, Hacienda, CCSS, INS, Municipalidades y Ministerio de Salud).');
 
   doc.save('ficha-formalizacion.pdf');
 }
